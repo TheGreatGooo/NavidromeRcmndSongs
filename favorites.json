@@ -1,0 +1,292 @@
+[
+  {
+    "playCount": 0,
+    "playDate": "0001-01-01T00:00:00Z",
+    "rating": 0,
+    "starred": true,
+    "starredAt": "2023-12-25T00:25:42Z",
+    "bookmarkPosition": 0,
+    "id": "54012edf9a0780923af3c344c40f886d",
+    "path": "/music/Dan + Shay/10,000 Hours (2019)/Dan + Shay - 10,000 Hours - 01 - 10,000 Hours.mp3",
+    "title": "10,000 Hours",
+    "album": "10,000 Hours",
+    "artistId": "8e9261777ca9da968a5f0891c3296c58",
+    "artist": "Dan + Shay",
+    "albumArtistId": "8e9261777ca9da968a5f0891c3296c58",
+    "albumArtist": "Dan + Shay",
+    "albumId": "e4567f163953532d900dafdda06b7e15",
+    "hasCoverArt": true,
+    "trackNumber": 1,
+    "discNumber": 1,
+    "year": 2019,
+    "date": "2019",
+    "originalYear": 2019,
+    "originalDate": "2019",
+    "releaseYear": 2019,
+    "releaseDate": "2019-10-21",
+    "size": 6828430,
+    "suffix": "mp3",
+    "duration": 167.73,
+    "bitRate": 320,
+    "channels": 2,
+    "genre": "Country Pop",
+    "genres": [
+      {
+        "id": "1566681b-da18-45b0-b916-a909c8fc9063",
+        "name": "Country Pop"
+      },
+      {
+        "id": "835fa1c3-c190-4213-9274-2b1d5e173814",
+        "name": "Pop"
+      }
+    ],
+    "fullText": " + 10,000 dan hours shay",
+    "orderTitle": "10,000 Hours",
+    "orderAlbumName": "10,000 Hours",
+    "orderArtistName": "Dan + Shay",
+    "orderAlbumArtistName": "Dan + Shay",
+    "compilation": false,
+    "mbzRecordingID": "ccdf08fc-0b64-4a8d-8768-358c3d276a12",
+    "mbzReleaseTrackId": "3167da31-a7bf-496f-9a0c-4e2fedee3b2d",
+    "mbzAlbumId": "78d8c0ed-7af9-4a0f-a62c-5c0e638c9486",
+    "mbzArtistId": "33cf3954-10af-4dcb-985f-9420d1fa4168",
+    "mbzAlbumArtistId": "33cf3954-10af-4dcb-985f-9420d1fa4168",
+    "rgAlbumGain": -10.15,
+    "rgAlbumPeak": 1.038756,
+    "rgTrackGain": -10.15,
+    "rgTrackPeak": 1.038756,
+    "createdAt": "2023-12-21T03:07:25.228729276Z",
+    "updatedAt": "2023-12-24T12:25:54.816625682Z"
+  },
+  {
+    "playCount": 0,
+    "playDate": "0001-01-01T00:00:00Z",
+    "rating": 0,
+    "starred": true,
+    "starredAt": "2023-12-24T22:28:58Z",
+    "bookmarkPosition": 0,
+    "id": "eccb900277e53378c23a738ecab3cf6f",
+    "path": "/music/Taylor Swift/1989 (2014)/Taylor Swift - 1989 - 08 - Bad Blood.flac",
+    "title": "Bad Blood",
+    "album": "1989",
+    "artistId": "28239d6140b4b5d6e1a8d8d4b3a05751",
+    "artist": "Taylor Swift",
+    "albumArtistId": "28239d6140b4b5d6e1a8d8d4b3a05751",
+    "albumArtist": "Taylor Swift",
+    "albumId": "3f2780fc788c2feecf0de4e5f9f84d08",
+    "hasCoverArt": true,
+    "trackNumber": 8,
+    "discNumber": 1,
+    "year": 2014,
+    "date": "2014-10-24",
+    "originalYear": 2014,
+    "originalDate": "2014-10-24",
+    "releaseYear": 2019,
+    "releaseDate": "2019-05-17",
+    "size": 78384325,
+    "suffix": "flac",
+    "duration": 210.52,
+    "bitRate": 2970,
+    "channels": 2,
+    "genre": "Alternative Pop",
+    "genres": [
+      {
+        "id": "5922d7a8-dd4c-4ea5-8c0c-829594b2471d",
+        "name": "Alternative Pop"
+      },
+      {
+        "id": "5cddef21-a899-4a85-9fb0-ac4dd72db3f6",
+        "name": "Country Rock"
+      },
+      {
+        "id": "795752d6-f4e6-40b7-9f4c-a7c33831e36b",
+        "name": "Dance-Pop"
+      },
+      {
+        "id": "8eeadd2b-302f-4913-bee2-37ffc76c7db0",
+        "name": "Electronic"
+      },
+      {
+        "id": "bce0a7da-ba43-4121-aa8a-19dffd3c6db4",
+        "name": "Electropop"
+      },
+      {
+        "id": "835fa1c3-c190-4213-9274-2b1d5e173814",
+        "name": "Pop"
+      },
+      {
+        "id": "1bbac77b-4b0c-490c-bea0-cd388dc36ed9",
+        "name": "Synth-Pop"
+      },
+      {
+        "id": "993aef54-5f09-43c5-8e35-65545da3f901",
+        "name": "Hypnagogic Pop"
+      }
+    ],
+    "fullText": " 1989 bad blood swift taylor",
+    "orderTitle": "Bad Blood",
+    "orderAlbumName": "1989",
+    "orderArtistName": "Taylor Swift",
+    "orderAlbumArtistName": "Taylor Swift",
+    "compilation": false,
+    "mbzRecordingID": "914f6a27-fce4-4a75-9267-049b51a1b086",
+    "mbzReleaseTrackId": "aef4b42b-925e-46ad-9ced-2f76373ac0f5",
+    "mbzAlbumId": "c0c23311-9c67-44a3-af66-0cc94b95c9b2",
+    "mbzArtistId": "20244d07-534f-4eff-b4d4-930878889970",
+    "mbzAlbumArtistId": "20244d07-534f-4eff-b4d4-930878889970",
+    "mbzAlbumType": "album",
+    "rgAlbumGain": -4.34,
+    "rgAlbumPeak": 1.012403,
+    "rgTrackGain": -3.99,
+    "rgTrackPeak": 1.002032,
+    "createdAt": "2023-12-21T15:30:29.863957038Z",
+    "updatedAt": "2023-12-20T07:21:56.29012463Z"
+  },
+  {
+    "playCount": 0,
+    "playDate": "0001-01-01T00:00:00Z",
+    "rating": 0,
+    "starred": true,
+    "starredAt": "2023-12-24T22:29:13Z",
+    "bookmarkPosition": 0,
+    "id": "1f41a5d868fa03ed27b90dbd98f0818b",
+    "path": "/music/Taylor Swift/Midnights (2022)/Taylor Swift - Midnights - 09 - Bejeweled.flac",
+    "title": "Bejeweled",
+    "album": "Midnights",
+    "artistId": "28239d6140b4b5d6e1a8d8d4b3a05751",
+    "artist": "Taylor Swift",
+    "albumArtistId": "28239d6140b4b5d6e1a8d8d4b3a05751",
+    "albumArtist": "Taylor Swift",
+    "albumId": "1360541525998366f1067c950b1e5a91",
+    "hasCoverArt": true,
+    "trackNumber": 9,
+    "discNumber": 1,
+    "year": 2022,
+    "date": "2022-10-21",
+    "originalYear": 2022,
+    "originalDate": "2022-10-21",
+    "releaseYear": 2022,
+    "releaseDate": "2022-10-21",
+    "size": 42329936,
+    "suffix": "flac",
+    "duration": 194.17,
+    "bitRate": 1706,
+    "channels": 2,
+    "genre": "Alternative Pop",
+    "genres": [
+      {
+        "id": "5922d7a8-dd4c-4ea5-8c0c-829594b2471d",
+        "name": "Alternative Pop"
+      },
+      {
+        "id": "39263054-3bdb-4d3e-a7bd-920c7faf2ef1",
+        "name": "Country"
+      },
+      {
+        "id": "80086284-fc74-4d83-ba51-58ba4b061280",
+        "name": "Downtempo"
+      },
+      {
+        "id": "835fa1c3-c190-4213-9274-2b1d5e173814",
+        "name": "Pop"
+      },
+      {
+        "id": "c7356a02-f8fe-48d5-b455-23df8712d93e",
+        "name": "Singer-Songwriter"
+      },
+      {
+        "id": "1bbac77b-4b0c-490c-bea0-cd388dc36ed9",
+        "name": "Synth-Pop"
+      },
+      {
+        "id": "4acacad2-6cda-46f8-ac49-ad278b342a58",
+        "name": "Dream Pop"
+      }
+    ],
+    "fullText": " bejeweled midnights swift taylor",
+    "orderTitle": "Bejeweled",
+    "orderAlbumName": "Midnights",
+    "orderArtistName": "Taylor Swift",
+    "orderAlbumArtistName": "Taylor Swift",
+    "compilation": false,
+    "comment": "PMEDIA",
+    "mbzRecordingID": "2a1f8028-6d5e-45a5-b821-42a45a2fa6b1",
+    "mbzReleaseTrackId": "276be8d6-7c9a-4de6-b2e8-1ddfe6668804",
+    "mbzAlbumId": "1a5e3a74-e9b7-4bb5-8b67-86ff25c4f322",
+    "mbzArtistId": "20244d07-534f-4eff-b4d4-930878889970",
+    "mbzAlbumArtistId": "20244d07-534f-4eff-b4d4-930878889970",
+    "mbzAlbumType": "album",
+    "rgAlbumGain": -7.74,
+    "rgAlbumPeak": 1.326618,
+    "rgTrackGain": -7.35,
+    "rgTrackPeak": 1.326618,
+    "createdAt": "2023-12-21T15:33:46.13756649Z",
+    "updatedAt": "2023-12-20T07:18:24.203736281Z"
+  },
+  {
+    "playCount": 0,
+    "playDate": "0001-01-01T00:00:00Z",
+    "rating": 0,
+    "starred": true,
+    "starredAt": "2023-12-25T01:01:21Z",
+    "bookmarkPosition": 0,
+    "id": "b7bb0d15b28eaf32ecc99fbf9a1c05f4",
+    "path": "/music/Justin Bieber/Justice (2021)/Justin Bieber - Justice - 11 - Ghost.flac",
+    "title": "Ghost",
+    "album": "Justice",
+    "artistId": "3e4581d5de89a6b4bc12b47dbc8bbf47",
+    "artist": "Justin Bieber",
+    "albumArtistId": "3e4581d5de89a6b4bc12b47dbc8bbf47",
+    "albumArtist": "Justin Bieber",
+    "albumId": "30842327065d176338f11c4298554922",
+    "hasCoverArt": true,
+    "trackNumber": 11,
+    "discNumber": 1,
+    "year": 2021,
+    "date": "2021-03-19",
+    "originalYear": 2021,
+    "originalDate": "2021-03-19",
+    "releaseYear": 2021,
+    "releaseDate": "2021-03-19",
+    "size": 31150420,
+    "suffix": "flac",
+    "duration": 153.19,
+    "bitRate": 1599,
+    "channels": 2,
+    "genre": "Electronic",
+    "genres": [
+      {
+        "id": "8eeadd2b-302f-4913-bee2-37ffc76c7db0",
+        "name": "Electronic"
+      },
+      {
+        "id": "835fa1c3-c190-4213-9274-2b1d5e173814",
+        "name": "Pop"
+      },
+      {
+        "id": "2343e86c-1999-4459-a64f-f67234ff6b12",
+        "name": "Progressive House"
+      }
+    ],
+    "fullText": " bieber ghost justice justin",
+    "orderTitle": "Ghost",
+    "orderAlbumName": "Justice",
+    "orderArtistName": "Justin Bieber",
+    "orderAlbumArtistName": "Justin Bieber",
+    "compilation": false,
+    "comment": "PMEDIA",
+    "lyrics": "www.t.me/pmedia_music",
+    "mbzRecordingID": "78a3a527-c8cb-4cd7-98b1-00af2a0a9d0c",
+    "mbzReleaseTrackId": "39760406-2b30-4f9e-9d71-c39392ad9925",
+    "mbzAlbumId": "9bd9e1ae-00e3-48fa-bd90-c6e2120893f3",
+    "mbzArtistId": "e0140a67-e4d1-4f13-8a01-364355bee46e",
+    "mbzAlbumArtistId": "e0140a67-e4d1-4f13-8a01-364355bee46e",
+    "mbzAlbumType": "album",
+    "rgAlbumGain": -9.79,
+    "rgAlbumPeak": 1.134424,
+    "rgTrackGain": -9.76,
+    "rgTrackPeak": 1.10576,
+    "createdAt": "2023-12-21T06:52:47.082432104Z",
+    "updatedAt": "2023-12-24T12:33:11.059378969Z"
+  }
+]
