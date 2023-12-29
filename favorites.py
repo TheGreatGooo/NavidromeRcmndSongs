@@ -1,13 +1,8 @@
 import requests
 import json
 import config
-import requests
 
-cookies = {
-    'nd-player-636865727279': 'd649631f-437e-45de-aa69-89006c3edebc',
-}
-
-headers = {
+HEADERS = {
     'Accept-Language': 'en-CA,en;q=0.9,fr-CA;q=0.8,fr;q=0.7,en-US;q=0.6,en-GB;q=0.5',
     'Connection': 'keep-alive',
     'Referer': 'http://arctic.kudikala.lan/navidrome/app/',
@@ -17,7 +12,7 @@ headers = {
     'x-nd-client-unique-id': config.xnd_clientid,
 }
 
-params = {
+PARAMS = {
     '_end': '15',
     '_order': 'ASC',
     '_sort': 'title',
@@ -25,48 +20,17 @@ params = {
     'starred': 'true',
 }
 
-lastfm_api_key = config.lastfm_api_key
-lastfm_shared_secret = config.lastfm_shared_secret
+LASTFM_API_KEY = config.lastfm_api_key
 
-def get_favorites():
+def send_navidrome_request(endpoint, cookies=None, params=None):
     try:
-        navidrome_response = requests.get(
-            'http://arctic.kudikala.lan/navidrome/api/song',
-            params=params,
-            cookies=cookies,
-            headers=headers,
-            verify=False,
-        )
-        navidrome_response.raise_for_status()
-        favorites_data = navidrome_response.json()
-
-        with open("favorites.json", "w") as json_file:
-            json.dump(favorites_data, json_file, indent=2)
-
-        print("Favorites saved to favorites.json")
-
-        similar_tracks = []
-        for song in favorites_data:
-            artist = song.get('artist')
-            track_name = song.get('title')
-
-            if artist and track_name:
-                similar_tracks.extend(get_similar_tracks(artist, track_name))
-
-        with open("similartracksfromfav.json", "w") as json_file:
-            json.dump(similar_tracks, json_file, indent=2)
-
-        print("Similar tracks saved to similartracksfromfav.json")
-
-        top_100_tracks = select_top_tracks(similar_tracks, 100)
-        
-        with open("top100tracks.json", "w") as json_file:
-            json.dump(top_100_tracks, json_file, indent= 2)
-
-        print("Top 100 tracks from similar tracks saved to top100tracks.json")
+        response = requests.get(endpoint, cookies=cookies, headers=HEADERS, params=params, verify=False)
+        response.raise_for_status()
+        return response.json()
 
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
+        return None
 
 def get_similar_tracks(artist, track_name):
     try:
@@ -74,20 +38,38 @@ def get_similar_tracks(artist, track_name):
             'method': 'track.getSimilar',
             'artist': artist,
             'track': track_name,
-            'api_key': lastfm_api_key,
+            'api_key': LASTFM_API_KEY,
             'format': 'json',
         }
 
         lastfm_response = requests.get('http://ws.audioscrobbler.com/2.0/', params=lastfm_params)
         lastfm_response.raise_for_status()
-        similar_tracks_data = lastfm_response.json().get('similartracks', {}).get('track', [])
-
-        return similar_tracks_data
+        return lastfm_response.json().get('similartracks', {}).get('track', [])
 
     except requests.exceptions.RequestException as e:
         print(f"Error getting similar tracks: {e}")
         return []
 
+def save_to_json(data, filename):
+    with open(filename, "w") as json_file:
+        json.dump(data, json_file, indent=2)
+        print(f"{filename} saved.")
+
+def get_favorites():
+    navidrome_response = send_navidrome_request('http://arctic.kudikala.lan/navidrome/api/song', cookies=config.cookies, params=PARAMS)
+
+    if not navidrome_response:
+        return
+
+    save_to_json(navidrome_response, "favorites.json")
+
+    similar_tracks = [get_similar_tracks(song.get('artist'), song.get('title')) for song in navidrome_response if 'artist' in song and 'title' in song]
+    similar_tracks = [track for tracks in similar_tracks for track in tracks]
+
+    save_to_json(similar_tracks, "similartracksfromfav.json")
+
+    top_100_tracks = select_top_tracks(similar_tracks, 100)
+    save_to_json(top_100_tracks, "top100tracks.json")
 
 def select_top_tracks(similar_tracks, num_tracks):
     sorted_tracks = sorted(similar_tracks, key=lambda x: int(x.get('playcount', 0)), reverse=True)
