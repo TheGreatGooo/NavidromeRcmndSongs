@@ -1,6 +1,38 @@
 import requests
 import json
 import config
+import pwinput
+
+
+def auth_and_capture_headers(username, password):
+    auth_url = "http://arctic.kudikala.lan/navidrome/auth/login"
+
+    payload = {
+        "username": input("Enter your Navidrome username: "),
+        "password": pwinput.pwinput(prompt = "Enter your password: ", mask="*")
+    }
+
+    try:
+        response = requests.post(auth_url, json=payload)
+        response.raise_for_status()
+
+        json_response = response.json()
+
+        xnd_authorization = "Bearer " + json_response.get('token')
+        xnd_client_id = json_response.get('id')
+
+        if xnd_authorization and xnd_client_id:
+            print("Authentication successful!")
+            return xnd_authorization, xnd_client_id
+        else:
+            print("Authentication failed. Headers not found.")
+            return None, None
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error during authentication: {e}")
+        return None, None
+
+xnd_authorization, xnd_client_id = auth_and_capture_headers(config.username, config.password)
 
 HEADERS = {
     'Accept-Language': 'en-CA,en;q=0.9,fr-CA;q=0.8,fr;q=0.7,en-US;q=0.6,en-GB;q=0.5',
@@ -8,8 +40,8 @@ HEADERS = {
     'Referer': 'http://arctic.kudikala.lan/navidrome/app/',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'accept': 'application/json',
-    'x-nd-authorization': config.xnd_authorization,
-    'x-nd-client-unique-id': config.xnd_clientid,
+    'x-nd-authorization': xnd_authorization,
+    'x-nd-client-unique-id': xnd_client_id,
 }
 
 PARAMS = {
