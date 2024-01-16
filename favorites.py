@@ -22,6 +22,26 @@ def login():
     except Exception as e:
         return jsonify({'sucess': False,  'message': f'Error during authentication: {str(e)}'})
 
+@app.route('/songs', methods=['GET'])
+def recommend_songs():
+    navidrome_server_url = request.args.get("navidrome_server_url")
+    navidrome_username = request.args.get("navidrome_username")
+    navidrome_password = request.args.get("navidrome_password")
+    lastfm_token = request.args.get("lastfm_token")
+    limit = request.args.get("limit")
+
+    try:
+        auth_tokens = auth_and_capture_headers(navidrome_server_url, navidrome_username, navidrome_password)
+        if not auth_tokens:
+            raise Exception("Auth failed, check the navidrome username and password")
+        current_favorties = get_current_favorites(navidrome_server_url, auth_tokens)
+        all_similar_tracks = get_all_similar_tracks(current_favorties)
+        similar_tracks_sorted = sorted(all_similar_tracks, key=lambda track: int(track.get('playcount', 0)), reverse=True)
+        top_tracks = filter_tracks(similar_tracks_sorted, limit)
+        return jsonify({'success': True, 'topSongs': top_tracks})
+    
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error fetching top songs: {str(e)}'})
 
 def auth_and_capture_headers(navidrome_server_url, username, password):
     auth_url = f"{navidrome_server_url}/auth/login"
@@ -121,27 +141,6 @@ def filter_tracks(similar_tracks, limit):
                 break
 
     return top_tracks
-
-@app.route('/songs', methods=['GET'])
-def recommend_songs():
-    navidrome_server_url = request.args.get("navidrome_server_url")
-    navidrome_username = request.args.get("navidrome_username")
-    navidrome_password = request.args.get("navidrome_password")
-    lastfm_token = request.args.get("lastfm_token")
-    limit = request.args.get("limit")
-
-    try:
-        auth_tokens = auth_and_capture_headers(navidrome_server_url, navidrome_username, navidrome_password)
-        if not auth_tokens:
-            raise Exception("Auth failed, check the navidrome username and password")
-        current_favorties = get_current_favorites(navidrome_server_url, auth_tokens)
-        all_similar_tracks = get_all_similar_tracks(current_favorties)
-        similar_tracks_sorted = sorted(all_similar_tracks, key=lambda track: int(track.get('playcount', 0)), reverse=True)
-        top_tracks = filter_tracks(similar_tracks_sorted, limit)
-        return jsonify({'success': True, 'topSongs': top_tracks})
-    
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Error fetching top songs: {str(e)}'})
 
 if __name__ == "__main__":
     app.run(port=5000)
