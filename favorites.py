@@ -1,41 +1,50 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 import requests
 import json
-import config
-import pwinput
 
 app = Flask(__name__)
-CORS(app)
 
-xnd_authorization = None
-xnd_client_id = None
-
-@app.route('/login', methods=['POST'])
-
+@app.route('/test-login', methods=['POST'])
 def login():
     try:
-        payload=request.get_json()
+        payload = request.get_json()
+        navidrome_server_url = payload.get('navidrome_server_url')
         username = payload.get('username')
         password = payload.get('password')
 
-        print(f"Received username: {username}, password: {password}")
-        xnd_authorization, xnd_client_id = auth_and_capture_headers(username,password)
+        auth_tokens = auth_and_capture_headers(navidrome_server_url, username, password)
 
-        if xnd_authorization and xnd_client_id:
+        if auth_tokens:
             return jsonify({'sucess': True, 'message': 'Authentication succesful'})
         else:
             return jsonify({'success': False, 'message': 'Authentication failed'})
         
     except Exception as e:
         return jsonify({'sucess': False,  'message': f'Error during authentication: {str(e)}'})
+
+@app.route('/songs', methods=['GET'])
+def recommend_songs():
+    navidrome_server_url = request.args.get("navidrome_server_url")
+    navidrome_username = request.args.get("navidrome_username")
+    navidrome_password = request.args.get("navidrome_password")
+    lastfm_token = request.args.get("lastfm_token")
+    limit = request.args.get("limit")
+
+    try:
+        auth_tokens = auth_and_capture_headers(navidrome_server_url, navidrome_username, navidrome_password)
+        if not auth_tokens:
+            raise Exception("Auth failed, check the navidrome username and password")
+        current_favorties = get_current_favorites(navidrome_server_url, auth_tokens)
+        all_similar_tracks = get_all_similar_tracks(current_favorties)
+        similar_tracks_sorted = sorted(all_similar_tracks, key=lambda track: int(track.get('playcount', 0)), reverse=True)
+        top_tracks = filter_tracks(similar_tracks_sorted, limit)
+        return jsonify({'success': True, 'topSongs': top_tracks})
     
-def index():
-    return 'Server is running'
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Error fetching top songs: {str(e)}'})
 
-
-def auth_and_capture_headers(username, password):
-    auth_url = "http://arctic.kudikala.lan/navidrome/auth/login"
+def auth_and_capture_headers(navidrome_server_url, username, password):
+    auth_url = f"{navidrome_server_url}/auth/login"
 
     payload = {
         "username": username,
@@ -54,28 +63,16 @@ def auth_and_capture_headers(username, password):
         xnd_client_id = json_response.get('id')
 
         if xnd_authorization and xnd_client_id:
-            print("Authentication successful!")
-            return xnd_authorization, xnd_client_id
+            return (xnd_authorization, xnd_client_id)
         else:
             print("Authentication failed. Headers not found.")
-            return None, None
+            return None
 
     except requests.exceptions.RequestException as e:
         print(f"Error during authentication: {e}")
-        return None, None
+        return None
 
-
-HEADERS = {
-    'Accept-Language': 'en-CA,en;q=0.9,fr-CA;q=0.8,fr;q=0.7,en-US;q=0.6,en-GB;q=0.5',
-    'Connection': 'keep-alive',
-    'Referer': 'http://arctic.kudikala.lan/navidrome/app/',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'accept': 'application/json',
-    'x-nd-authorization': xnd_authorization,
-    'x-nd-client-unique-id': xnd_client_id,
-}
-
-PARAMS = {
+FAV_SEARCH_PARAMS = {
     '_end': '15',
     '_order': 'ASC',
     '_sort': 'title',
@@ -83,13 +80,12 @@ PARAMS = {
     'starred': 'true',
 }
 
-LASTFM_API_KEY = config.lastfm_api_key
-
-
-def send_navidrome_request(endpoint, cookies=None, params=None):
+def send_navidrome_request(endpoint, auth_tokens, params=None):
     try:
-        response = requests.get(endpoint, cookies=cookies,
-                                headers=HEADERS, params=params, verify=False)
+        response = requests.get(endpoint,
+                                headers={'accept': 'application/json',
+    'x-nd-authorization': auth_tokens[0],
+    'x-nd-client-unique-id': auth_tokens[1]}, params=params, verify=False)
         response.raise_for_status()
         return response.json()
 
@@ -98,13 +94,13 @@ def send_navidrome_request(endpoint, cookies=None, params=None):
         return None
 
 
-def get_similar_tracks(artist, track_name):
+def get_similar_tracks(lastfm_api_key, artist, track_name):
     try:
         lastfm_params = {
             'method': 'track.getSimilar',
             'artist': artist,
             'track': track_name,
-            'api_key': LASTFM_API_KEY,
+            'api_key': lastfm_api_key,
             'format': 'json',
         }
 
@@ -123,53 +119,28 @@ def save_to_json(data, filename):
         json.dump(data, json_file, indent=2)
         print(f"{filename} saved.")
 
+def get_current_favorites(navidrome_server_url, auth_tokens):
+    return send_navidrome_request(
+        f'{navidrome_server_url}/api/song', auth_tokens, params=FAV_SEARCH_PARAMS)
 
-def get_favorites():
-    navidrome_response = send_navidrome_request(
-        'http://arctic.kudikala.lan/navidrome/api/song', cookies=config.cookies, params=PARAMS)
-
-    if not navidrome_response:
-        return
-
-    #save_to_json(navidrome_response, "favorites.json")
-
-    similar_tracks = [get_similar_tracks(song.get('artist'), song.get(
+def get_all_similar_tracks(lastfm_api_key, current_favorties):
+    similar_tracks = [get_similar_tracks(lastfm_api_key, song.get('artist'), song.get(
         'title')) for song in navidrome_response if 'artist' in song and 'title' in song]
-    similar_tracks = [track for tracks in similar_tracks for track in tracks]
+    return [track for tracks in similar_tracks for track in tracks]
 
-    #save_to_json(similar_tracks, "similartracksfromfav.json")
-
-    top_100_tracks = select_top_tracks(similar_tracks, 100)
-    return top_100_tracks
-    #save_to_json(top_100_tracks, "top100tracks.json")
-
-
-def select_top_tracks(similar_tracks, num_tracks):
-    sorted_tracks = sorted(similar_tracks, key=lambda x: int(
-        x.get('playcount', 0)), reverse=True)
-
+def filter_tracks(similar_tracks, limit):
     top_tracks = []
     selected_tracks = set()
-
-    for track in sorted_tracks:
+    for track in similar_tracks:
         title = track.get('name')
         if title not in selected_tracks:
             top_tracks.append(track)
             selected_tracks.add(title)
 
-            if len(top_tracks) == num_tracks:
+            if len(top_tracks) == limit:
                 break
 
     return top_tracks
-
-@app.route('/get-top-100-songs', methods=['GET'])
-def send_top_songs():
-    try:
-        topsongs = get_favorites()
-        return jsonify({'success': True, 'topSongs': topsongs})
-    
-    except Exception as e:
-        return jsonify({'success': False, 'message': f'Error fetching top songs: {str(e)}'})
 
 if __name__ == "__main__":
     app.run(port=5000)
