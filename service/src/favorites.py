@@ -22,13 +22,14 @@ def login():
     except Exception as e:
         return jsonify({'sucess': False,  'message': f'Error during authentication: {str(e)}'})
 
-@app.route('/songs', methods=['GET'])
+@app.route('/songs', methods=['POST'])
 def recommend_songs():
-    navidrome_server_url = request.args.get("navidrome_server_url")
-    navidrome_username = request.args.get("navidrome_username")
-    navidrome_password = request.args.get("navidrome_password")
-    lastfm_token = request.args.get("lastfm_token")
-    limit = request.args.get("limit")
+    payload = request.get_json()
+    navidrome_server_url = payload.get("navidrome_server_url")
+    navidrome_username = payload.get("navidrome_username")
+    navidrome_password = payload.get("navidrome_password")
+    lastfm_token = payload.get("lastfm_token")
+    limit = payload.get("limit")
 
     try:
         auth_tokens = auth_and_capture_headers(navidrome_server_url, navidrome_username, navidrome_password)
