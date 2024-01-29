@@ -15,12 +15,12 @@ def login():
         auth_tokens = auth_and_capture_headers(navidrome_server_url, username, password)
 
         if auth_tokens:
-            return jsonify({'sucess': True, 'message': 'Authentication succesful'})
+            return jsonify({'success': True, 'message': 'Authentication succesful'})
         else:
             return jsonify({'success': False, 'message': 'Authentication failed'})
         
     except Exception as e:
-        return jsonify({'sucess': False,  'message': f'Error during authentication: {str(e)}'})
+        return jsonify({'success': False,  'message': f'Error during authentication: {str(e)}'})
 
 @app.route('/songs', methods=['POST'])
 def recommend_songs():
