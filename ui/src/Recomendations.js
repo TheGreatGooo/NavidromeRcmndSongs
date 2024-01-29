@@ -10,18 +10,21 @@ const Recommendations = () => {
                 let navidrome_server_url = localStorage.getItem("navidrome_server_url")
                 let navidrome_username = localStorage.getItem("navidrome_username")
                 let navidrome_password = localStorage.getItem("navidrome_password")
-                let lastfm_token = localStorage.getItem("lastfm_token")
+                let lastfm_token = localStorage.getItem("token")
                 let limit = localStorage.getItem("limit")
                 let response = fetch("/api/songs",
                 {
                     method: 'POST',
-                    body: {
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
                         "navidrome_server_url": navidrome_server_url ? navidrome_server_url : "https://example.com/navidrome",
                         "navidrome_username": navidrome_username ? navidrome_username : "user",
                         "navidrome_password": navidrome_password ? navidrome_password : "password",
                         "lastfm_token": lastfm_token ? lastfm_token : "token",
                         "limit": limit ? limit : "100",
-                    }
+                    })
                 })
                 return response.then(response => response.json())
             });
