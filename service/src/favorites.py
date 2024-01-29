@@ -9,8 +9,8 @@ def login():
     try:
         payload = request.get_json()
         navidrome_server_url = payload.get('navidrome_server_url')
-        username = payload.get('username')
-        password = payload.get('password')
+        username = payload.get('navidrome_username')
+        password = payload.get('navidrome_password')
 
         auth_tokens = auth_and_capture_headers(navidrome_server_url, username, password)
 
