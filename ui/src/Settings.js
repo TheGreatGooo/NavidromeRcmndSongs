@@ -13,15 +13,17 @@ const updateSettings = (event) => {
 }
 
 const Settings = (props) => {
-    const [isLoading, setLoading] = useState(false);
+    const [isTestingConnection, setTestingConnection] = useState(false);
     const [dialogMessage, setDialogMessage] = useState("");
+    const [navidromeServerUrl, setNavidromeServerUrl] = useState(localStorage.getItem("navidrome_server_url"));
+    const [navidromeUsername, setNavidromeUsername] = useState(localStorage.getItem("navidrome_username"));
+    const [navidromePassword, setNavidromePassword] = useState(localStorage.getItem("navidrome_password"));
+    const [token, setToken] = useState(localStorage.getItem("token"));
+    const [limit, setLimit] = useState(localStorage.getItem("limit"));
     const handleClose = () => setDialogMessage("")
     useEffect(() => {
         function testConnection() {
             return new Promise((resolve) => {
-                let navidrome_server_url = localStorage.getItem("navidrome_server_url")
-                let navidrome_username = localStorage.getItem("navidrome_username")
-                let navidrome_password = localStorage.getItem("navidrome_password")
                 let response = fetch("/api/test-login",
                 {
                     method: 'POST',
@@ -29,31 +31,29 @@ const Settings = (props) => {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        "navidrome_server_url": navidrome_server_url ? navidrome_server_url : "https://example.com/navidrome",
-                        "navidrome_username": navidrome_username ? navidrome_username : "user",
-                        "navidrome_password": navidrome_password ? navidrome_password : "password",
+                        "navidrome_server_url": navidromeServerUrl ? navidromeServerUrl : "https://example.com/navidrome",
+                        "navidrome_username": navidromeUsername ? navidromeUsername : "user",
+                        "navidrome_password": navidromePassword ? navidromePassword : "password",
                     })
                 })
                 return response.then(response => {
+                    setTestingConnection(false);
                     if (response.ok){
+                        setDialogMessage("Navidrome server connected sucessfully")
                         return response.json()
                     } else {
-                        setLoading(false);
                         setDialogMessage("Got invalid response from Navidrome server")
                     }
                 })
             });
         }
 
-        if (isLoading) {
-            testConnection().then((test_response) => {
-                setLoading(false);
-                setDialogMessage("Navidrome server connected sucessfully")
-            });
+        if (isTestingConnection) {
+            testConnection()
         }
-    }, [isLoading]);
+    }, [isTestingConnection])
     
-    const handleClick = () => setLoading(true);
+    const handleClick = (event) => setTestingConnection(true);
     let showDialog = dialogMessage.length == 0?false:true
     return (
     <>
@@ -71,32 +71,32 @@ const Settings = (props) => {
     <Form onSubmit={(event)=>updateSettings(event)}>
         <Form.Group className='mb-3'>
             <Form.Label>Navidrome URL</Form.Label>
-            <Form.Control name='url' defaultValue={localStorage.getItem("navidrome_server_url")} placeholder='https://example.com/navidrome'/>
+            <Form.Control name='url' value={navidromeServerUrl} onInput={e => setNavidromeServerUrl(e.target.value)} placeholder='https://example.com/navidrome'/>
             <Form.Text className='text-muted'>The base url of the Navidrome installation</Form.Text>
         </Form.Group>
         <Form.Group className='mb-3'>
             <Form.Label>Navidrome username</Form.Label>
-            <Form.Control defaultValue={localStorage.getItem("navidrome_username")} name='username' placeholder='user'/>
+            <Form.Control value={navidromeUsername} onInput={e => setNavidromeUsername(e.target.value)} name='username' placeholder='user'/>
             <Form.Text  className='text-muted'>Navidrome username</Form.Text>
         </Form.Group>
         <Form.Group className='mb-3'>
             <Form.Label>Navidrome password</Form.Label>
-            <Form.Control defaultValue={localStorage.getItem("navidrome_password")} name='password' type="password" placeholder='password'/>
+            <Form.Control value={navidromePassword} onInput={e => setNavidromePassword(e.target.value)} name='password' type="password" placeholder='password'/>
             <Form.Text className='text-muted'>Navidrome password</Form.Text>
         </Form.Group>
 
         <Form.Group className='mb-3'>
-            <Button onClick={!isLoading ? handleClick : null}>Test Connection</Button>
+            <Button onClick={!isTestingConnection ? handleClick : null}>Test Connection</Button>
         </Form.Group>
 
         <Form.Group className='mb-3'>
             <Form.Label>LastFM Token</Form.Label>
-            <Form.Control defaultValue={localStorage.getItem("token")} name='token' placeholder='token'/>
+            <Form.Control value={token} onInput={e => setToken(e.target.value)}  name='token' placeholder='token'/>
             <Form.Text className='text-muted'>LastFM token to use for querying similar songs</Form.Text>
         </Form.Group>
         <Form.Group className='mb-3'>
             <Form.Label>Limit</Form.Label>
-            <Form.Control defaultValue={localStorage.getItem("limit")} name='limit' placeholder='100'/>
+            <Form.Control value={limit} onInput={e => setLimit(e.target.value)}  name='limit' placeholder='100'/>
             <Form.Text className='text-muted'>Number of songs to suggest</Form.Text>
         </Form.Group>
         <Form.Group className='mb-3'>
