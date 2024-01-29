@@ -126,7 +126,7 @@ def get_current_favorites(navidrome_server_url, auth_tokens):
 
 def get_all_similar_tracks(lastfm_api_key, current_favorties):
     similar_tracks = [get_similar_tracks(lastfm_api_key, song.get('artist'), song.get(
-        'title')) for song in navidrome_response if 'artist' in song and 'title' in song]
+        'title')) for song in current_favorties if 'artist' in song and 'title' in song]
     return [track for tracks in similar_tracks for track in tracks]
 
 def filter_tracks(similar_tracks, limit):
