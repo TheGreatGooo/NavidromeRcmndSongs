@@ -39,10 +39,15 @@ const Settings = (props) => {
                 return response.then(response => {
                     setTestingConnection(false);
                     if (response.ok){
-                        setDialogMessage("Navidrome server connected sucessfully")
+                        let testResponse = response.json()
+                        if (testResponse["success"]){
+                            setDialogMessage("Navidrome server connected sucessfully")
+                        } else {
+                            setDialogMessage("Navidrome failed with message " + testResponse["message"])
+                        }
                         return response.json()
                     } else {
-                        setDialogMessage("Got invalid response from Navidrome server")
+                        setDialogMessage("Got invalid response from Navidrome server or Python backend")
                     }
                 })
             });
