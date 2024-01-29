@@ -36,7 +36,7 @@ def recommend_songs():
         if not auth_tokens:
             raise Exception("Auth failed, check the navidrome username and password")
         current_favorties = get_current_favorites(navidrome_server_url, auth_tokens)
-        all_similar_tracks = get_all_similar_tracks(current_favorties)
+        all_similar_tracks = get_all_similar_tracks(lastfm_token, current_favorties)
         similar_tracks_sorted = sorted(all_similar_tracks, key=lambda track: int(track.get('playcount', 0)), reverse=True)
         top_tracks = filter_tracks(similar_tracks_sorted, limit)
         return jsonify({'success': True, 'topSongs': top_tracks})
