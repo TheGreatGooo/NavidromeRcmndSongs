@@ -132,16 +132,20 @@ def get_all_similar_tracks(lastfm_api_key, current_favorties):
 def filter_tracks(similar_tracks, limit):
     top_tracks = []
     selected_tracks = set()
+    previous_track = similar_tracks[0]
     for track in similar_tracks:
         title = track.get('name')
-        if title not in selected_tracks:
+        artist = track.get('artist').get('name')
+        if (artist, title) not in selected_tracks:
             top_tracks.append(track)
-            selected_tracks.add(title)
-
-            if len(top_tracks) == limit:
+            selected_tracks.add((artist, title))
+            if len(top_tracks) > int(limit):
+                previous_track = track
                 break
-
-    return top_tracks
+        elif ( previous_track.get('name') == title and previous_track.get('artist').get('name') == artist ):
+            top_tracks[len(top_tracks)-1]['playcount'] = top_tracks[len(top_tracks)-1]['playcount'] + track['playcount']
+        previous_track = track
+    return sorted(top_tracks, key=lambda track: int(track.get('playcount', 0)), reverse=True)
 
 if __name__ == "__main__":
     app.run(port=5000)

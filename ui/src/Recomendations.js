@@ -1,9 +1,12 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
-import { Button } from 'react-bootstrap';
+import { Button, Table, Modal } from 'react-bootstrap';
 
 const Recommendations = () => {
-    const [isLoading, setLoading] = useState(false);
+    const [isLoading, setLoading] = useState(false)
+    const [dialogMessage, setDialogMessage] = useState("")
+    const [recommendedSongs, setRecommendedSongs] = useState(localStorage.getItem("songs"))
+    const handleClose = () => setDialogMessage("")
     useEffect(() => {
         function computeRecommendations() {
             return new Promise((resolve) => {
@@ -26,33 +29,68 @@ const Recommendations = () => {
                         "limit": limit ? limit : "100",
                     })
                 })
-                return response.then(response => response.json())
+                return response.then(response => {
+                    setLoading(false);
+                    if (response.ok){
+                        return response.json()
+                    } else {
+                        setDialogMessage("Got invalid response from Navidrome server or Python backend")
+                    }
+                }).then((songs) => {
+                    if (songs){
+                        if (songs["success"]){
+                            setDialogMessage("Recommendations loaded")
+                            localStorage.setItem("songs", JSON.stringify(songs))
+                            setRecommendedSongs(JSON.stringify(songs))
+                        } else {
+                            setDialogMessage("Navidrome failed with message " + songs["message"])
+                        }
+                    }
+                });
             });
         }
 
         if (isLoading) {
-            computeRecommendations().then((songs) => {
-                localStorage.setItem("songs", JSON.stringify(songs))
-                setLoading(false);
-            });
+            computeRecommendations()
         }
     }, [isLoading]);
     
-    const handleClick = () => setLoading(true);
-    let songs = localStorage.getItem("songs");
-    if (songs){
-        return (
-            <div>
-                {songs}
-            </div>
-        )
-    }else{
-        return (
-            <div>
-                <Button disabled={isLoading} onClick={!isLoading ? handleClick : null}>🗘</Button>
-            </div>
-        )
+    const handleClick = () => setLoading(true)
+    let showDialog = dialogMessage.length == 0?false:true
+    let songs = []
+    try{
+        songs = JSON.parse(recommendedSongs)['topSongs']
+    }catch(e){
+
     }
+    return (
+        <div>
+            <Modal show={showDialog} onHide={handleClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Connection status</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>{dialogMessage}</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleClose}>
+                    Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+            <Table>
+                <thead>
+                    <tr>
+                        <th>Artist</th>
+                        <th>Track Name</th>
+                        <th>Playcount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {songs.map(song => <tr><td>{song['artist']['name']}</td><td>{song['name']}</td><td>{song['playcount']}</td></tr>)}
+                </tbody>
+            </Table>
+            <Button disabled={isLoading} onClick={!isLoading ? handleClick : null}>🗘</Button>
+        </div>
+    )
 }
 
 export default Recommendations
