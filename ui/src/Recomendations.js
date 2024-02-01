@@ -1,6 +1,6 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
-import { Button, Table, Modal } from 'react-bootstrap';
+import { Button, Table, Modal, Accordion } from 'react-bootstrap';
 
 const Recommendations = () => {
     const [isLoading, setLoading] = useState(false)
@@ -17,6 +17,7 @@ const Recommendations = () => {
                 let limit = localStorage.getItem("limit")
                 let response = fetch("/api/songs",
                 {
+                    signal: AbortSignal.timeout(300000),
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json"
@@ -63,6 +64,32 @@ const Recommendations = () => {
     }catch(e){
 
     }
+    let songsByAlbum = {}
+    for (let songIdx in songs) {
+        if (!songsByAlbum[songs[songIdx]['album']['title']]){
+            songsByAlbum[songs[songIdx]['album']['title']] = []
+        }
+        songsByAlbum[songs[songIdx]['album']['title']].push(songs[songIdx])
+    }
+    let sortedSongsByAlbum = Object.keys(songsByAlbum).map(function(key){
+        return [key, songsByAlbum[key]];
+    })
+    sortedSongsByAlbum.sort(function(obj1, obj2){
+        let playcount1 = 0
+        for (let songIdx in obj1[1]){
+            playcount1 = playcount1 + parseInt(obj1[1][songIdx]['playInfo']['playcount'])
+        }
+        let playcount2 = 0
+        for (let songIdx in obj2[1]){
+            playcount2 = playcount2 + parseInt(obj2[1][songIdx]['playInfo']['playcount'])
+        }
+        if (playcount1 < playcount2){
+            return 1
+        } else if (playcount1 > playcount2){
+            return -1
+        }
+        return 0
+    });
     return (
         <div>
             <Modal show={showDialog} onHide={handleClose}>
@@ -76,18 +103,47 @@ const Recommendations = () => {
                     </Button>
                 </Modal.Footer>
             </Modal>
-            <Table>
-                <thead>
-                    <tr>
-                        <th>Artist</th>
-                        <th>Track Name</th>
-                        <th>Playcount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {songs.map(song => <tr><td>{song['artist']['name']}</td><td>{song['name']}</td><td>{song['playcount']}</td></tr>)}
-                </tbody>
-            </Table>
+            <Accordion defaultActiveKey="0">
+                <Accordion.Item eventKey="0">
+                    <Accordion.Header>All Tracks</Accordion.Header>
+                    <Accordion.Body>
+                        <Table>
+                            <thead>
+                                <tr>
+                                    <th>Artist</th>
+                                    <th>Track Name</th>
+                                    <th>Playcount</th>
+                                    <th>Album</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {songs.map(song => <tr><td>{song['playInfo']['artist']['name']}</td><td>{song['playInfo']['name']}</td><td>{song['playInfo']['playcount']}</td><td>{song['album']['title']}</td></tr>)}
+                            </tbody>
+                        </Table>
+                    </Accordion.Body>
+                </Accordion.Item>
+                <Accordion.Item eventKey="1">
+                    <Accordion.Header>Tracks By Album</Accordion.Header>
+                    <Accordion.Body>
+                        <Table>
+                            <thead>
+                                <tr>
+                                    <th>Album</th>
+                                    <th>Artist</th>
+                                    <th>Track Name</th>
+                                    <th>Playcount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sortedSongsByAlbum.map(songWithDetails => <>
+                                    <tr><td>{songWithDetails[0]}</td></tr>
+                                    {songWithDetails[1].map(song => <tr><td></td><td>{song['playInfo']['artist']['name']}</td><td>{song['playInfo']['name']}</td><td>{song['playInfo']['playcount']}</td></tr>)}
+                                </>)}
+                            </tbody>
+                        </Table>
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
             <Button disabled={isLoading} onClick={!isLoading ? handleClick : null}>🗘</Button>
         </div>
     )
