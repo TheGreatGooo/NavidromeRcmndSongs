@@ -42,7 +42,7 @@ def recommend_songs():
         similar_tracks_sorted = sorted(all_similar_tracks, key=lambda track: int(track.get('playcount', 0)), reverse=True)
         top_tracks = filter_tracks(similar_tracks_sorted, limit)
         top_tracks_with_details = detailed_track_info(top_tracks)
-        return jsonify({'success': True, 'topSongs': top_tracks_with_details})
+        return jsonify({'success': True, 'topSongs': top_tracks_with_details, 'favorites': current_favorties})
     
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error fetching top songs: {str(e)}'})
@@ -94,7 +94,7 @@ def detailed_track_info(tracks):
             if title :
                 break
         if not title :
-            raise Exception(f"Album not found for the track: {track['name']} artist: {track['artist']['name']}")
+            tracks_with_details.append({'playInfo':track,'album':{'title':'unknown'}})
     return tracks_with_details
 
 def auth_and_capture_headers(navidrome_server_url, username, password):
@@ -127,7 +127,7 @@ def auth_and_capture_headers(navidrome_server_url, username, password):
         return None
 
 FAV_SEARCH_PARAMS = {
-    '_end': '15',
+    '_end': '1000',
     '_order': 'ASC',
     '_sort': 'title',
     '_start': '0',
@@ -198,7 +198,11 @@ def get_current_favorites(navidrome_server_url, auth_tokens):
 def get_all_similar_tracks(lastfm_api_key, current_favorties):
     similar_tracks = [get_similar_tracks(lastfm_api_key, song.get('artist'), song.get(
         'title')) for song in current_favorties if 'artist' in song and 'title' in song]
-    return [track for tracks in similar_tracks for track in tracks]
+    favs = set()
+    for fav in current_favorties:
+        favs.add(f"artist:{fav['artist'].lower()}|title:{fav['title'].lower()}")
+    print(favs)
+    return [track for tracks in similar_tracks for track in tracks if f"artist:{track['artist']['name'].lower()}|title:{track['name'].lower()}" not in favs]
 
 def filter_tracks(similar_tracks, limit):
     top_tracks = []
