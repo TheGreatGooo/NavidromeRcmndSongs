@@ -8,6 +8,8 @@ import { LinkContainer } from 'react-router-bootstrap';
         <Nav  className="flex-column" >
             <Nav.Link href="#settings">Settings</Nav.Link>
             <Nav.Link href="#recommendations">Recommendations</Nav.Link>
+            <Nav.Link href="#playlist">Playlist</Nav.Link>
+            <Nav.Link href="#missing">Missing Recommended Albums</Nav.Link>
         </Nav>
     </Container>
   );

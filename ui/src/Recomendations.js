@@ -17,7 +17,7 @@ const Recommendations = () => {
                 let limit = localStorage.getItem("limit")
                 let response = fetch("/api/songs",
                 {
-                    signal: AbortSignal.timeout(300000),
+                    signal: AbortSignal.timeout(3000000),
                     method: 'POST',
                     headers: {
                         "Content-Type": "application/json"

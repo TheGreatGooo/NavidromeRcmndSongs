@@ -2,9 +2,56 @@ from flask import Flask, request, jsonify
 import requests
 import json
 import musicbrainzngs
+from collections import namedtuple
 
 app = Flask(__name__)
 musicbrainzngs.set_useragent("ndrome_193","0.01")
+Song = namedtuple("Song", ["artist", "name"])
+
+@app.route('/playlist', methods=['POST'])
+def getPlaylist():
+    try:
+        payload = request.get_json()
+        navidrome_server_url = payload.get('navidrome_server_url')
+        username = payload.get('navidrome_username')
+        password = payload.get('navidrome_password')
+
+        auth_tokens = auth_and_capture_headers(navidrome_server_url, username, password)
+
+        playlist_id = get_playlist_id(navidrome_server_url, auth_tokens, 'recommended')
+        songs = get_playlist_songs(navidrome_server_url, auth_tokens, playlist_id)
+        return jsonify({'success': True, 'songs': songs})
+        
+    except Exception as e:
+        return jsonify({'success': False,  'message': f'Error while retrieving playlist tracks: {str(e)}'})
+
+@app.route('/playlist', methods=['PUT'])
+def updatePlaylist():
+    try:
+        payload = request.get_json()
+        navidrome_server_url = payload.get('navidrome_server_url')
+        username = payload.get('navidrome_username')
+        password = payload.get('navidrome_password')
+        playlist_songs = payload.get('playlist_songs')
+
+        auth_tokens = auth_and_capture_headers(navidrome_server_url, username, password)
+        playlist_id = get_playlist_id(navidrome_server_url, auth_tokens, 'recommended')
+        songs = get_playlist_songs(navidrome_server_url, auth_tokens, playlist_id)
+        new_playlist_keys = set()
+        for song in playlist_songs:
+            new_playlist_keys.add(Song(artist=song['artist'].lower(), name=song['name'].lower()))
+        playlist_keys = set()
+        for song in songs:
+            playlist_keys.add(Song(artist=song['artist'].lower(), name=song['title'].lower()))
+        songs_to_delete = playlist_keys - new_playlist_keys
+        songs_to_add = new_playlist_keys - playlist_keys
+        delete_playlist_songs(navidrome_server_url,auth_tokens,playlist_id,songs_to_delete, songs)
+        missing_songs = add_playlist_songs(navidrome_server_url,auth_tokens,playlist_id,songs_to_add)
+
+        return jsonify({'success': True, 'songs_to_delete': list(songs_to_delete), 'songs_to_add': list(songs_to_add), 'missing_songs': list(missing_songs)})
+        
+    except Exception as e:
+        return jsonify({'success': False,  'message': f'Error while retrieving playlist tracks: {str(e)}'})
 
 @app.route('/test-login', methods=['POST'])
 def login():
@@ -46,6 +93,42 @@ def recommend_songs():
     
     except Exception as e:
         return jsonify({'success': False, 'message': f'Error fetching top songs: {str(e)}'})
+
+def add_playlist_songs(navidrome_server_url, auth_tokens, playlist_id, songs_to_add):
+    ids = []
+    missing_songs = []
+    for song in songs_to_add:
+        song_ids = get_song_id(navidrome_server_url, auth_tokens, song)
+        if len(song_ids) > 0 :
+            ids = ids + song_ids
+        else:
+            missing_songs.append(song)
+    send_navidrome_post(f'{navidrome_server_url}/api/playlist/{playlist_id}/tracks', auth_tokens, {'ids':ids})
+    return missing_songs
+
+def delete_playlist_songs(navidrome_server_url, auth_tokens, playlist_id, songs_to_delete, navidrome_playlist_info):
+    song_id_map = {}
+    for song in navidrome_playlist_info:
+        songKey = Song(artist=song['artist'].lower(), name=song['title'].lower())
+        if songKey not in song_id_map:
+            song_id_map[songKey] = []
+        song_id_map[songKey].append(song['id'])
+    ids = []
+    for song in songs_to_delete:
+        song_ids = song_id_map[song]
+        for song_id in song_ids :
+            send_navidrome_delete(f'{navidrome_server_url}/api/playlist/{playlist_id}/tracks', auth_tokens, {'id':song_id})
+
+def get_song_id(navidrome_server_url, auth_tokens, song):
+    song_ids = []
+    songs = send_navidrome_request(
+        f'{navidrome_server_url}/api/song', auth_tokens, params={'_end':15,'_start':0,'title':song[1],'artist':song[0]})
+    if not songs :
+        return song_ids
+    for song_result in songs:
+        if song_result['title'].lower() == song[1] and song_result['artist'].lower() == song[0]:
+            song_ids.append(song_result['id'])
+    return song_ids
 
 def isType(recordingType, release):
     return ( ('type' in release['release-group'] and release['release-group']['type'] == recordingType) or ('primary-type' in release['release-group'] and release['release-group']['primary-type'] == recordingType))
@@ -147,6 +230,32 @@ def send_navidrome_request(endpoint, auth_tokens, params=None):
         print(f"Error: {e}")
         return None
 
+def send_navidrome_post(endpoint, auth_tokens, body=None):
+    try:
+        response = requests.post(endpoint,
+                                headers={'accept': 'application/json',
+    'x-nd-authorization': auth_tokens[0],
+    'x-nd-client-unique-id': auth_tokens[1]}, json=body, verify=False)
+        response.raise_for_status()
+        return response.json()
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+        return None
+
+def send_navidrome_delete(endpoint, auth_tokens, params=None):
+    try:
+        response = requests.delete(endpoint,
+                                headers={'accept': 'application/json',
+    'x-nd-authorization': auth_tokens[0],
+    'x-nd-client-unique-id': auth_tokens[1]}, params=params, verify=False)
+        response.raise_for_status()
+        return response.json()
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+        return None
+
 def get_track_details(lastfm_api_key, artist, track_name):
     try:
         lastfm_params = {
@@ -194,6 +303,22 @@ def save_to_json(data, filename):
 def get_current_favorites(navidrome_server_url, auth_tokens):
     return send_navidrome_request(
         f'{navidrome_server_url}/api/song', auth_tokens, params=FAV_SEARCH_PARAMS)
+
+def get_playlist_id(navidrome_server_url, auth_tokens, playlist_name):
+    playlists = send_navidrome_request(
+        f'{navidrome_server_url}/api/playlist', auth_tokens, params={"_end":"0","_sort":"name","_start":"-100"})
+    for playlist in playlists:
+        if playlist['name'] == playlist_name :
+            return playlist['id']
+    return None
+
+def get_playlist_songs(navidrome_server_url, auth_tokens, playlist_id):
+    if not playlist_id :
+        send_navidrome_post(f'{navidrome_server_url}/api/playlist', auth_tokens, body={'public':False, 'name':playlist_name})
+        return []
+    songs = send_navidrome_request(
+        f'{navidrome_server_url}/api/playlist/{playlist_id}/tracks', auth_tokens, params={"_end":"1000","_sort":"id","_start":"0","playlist_id":playlist_id})
+    return songs
 
 def get_all_similar_tracks(lastfm_api_key, current_favorties):
     similar_tracks = [get_similar_tracks(lastfm_api_key, song.get('artist'), song.get(
