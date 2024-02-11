@@ -3,7 +3,9 @@ import requests
 import json
 import musicbrainzngs
 from collections import namedtuple
+from diskcache import Cache
 
+cache = Cache("/cache")
 app = Flask(__name__)
 musicbrainzngs.set_useragent("ndrome_193","0.01")
 Song = namedtuple("Song", ["artist", "name"])
@@ -133,11 +135,21 @@ def get_song_id(navidrome_server_url, auth_tokens, song):
 def isType(recordingType, release):
     return ( ('type' in release['release-group'] and release['release-group']['type'] == recordingType) or ('primary-type' in release['release-group'] and release['release-group']['primary-type'] == recordingType))
 
+def search_musicbrainz(artist, track):
+    cache.close()
+    with Cache(cache.directory) as reference:
+        value = reference.get(f"( {artist} |-|MusicbrainzCacheIndex-|- {track}")
+        if value:
+            return json.loads(value)
+        value = musicbrainzngs.search_recordings(query=f"title:{track} AND artist:{artist}")
+        reference.set(f"( {artist} |-|MusicbrainzCacheIndex-|- {track}", json.dumps(value), expire=80640000)
+        return value
+
 def detailed_track_info(tracks):
     tracks_with_details = []
     for track in tracks:
         title = None
-        result = musicbrainzngs.search_recordings(query=f"title:{track['name']} AND artist:{track['artist']['name']}")
+        result = search_musicbrainz(track['artist']['name'], track['name'])
         albums = []
         for recording in result['recording-list']:
             if int(recording['ext:score']) < 60 :
@@ -275,7 +287,23 @@ def get_track_details(lastfm_api_key, artist, track_name):
         print(f"Error getting similar tracks: {e}")
         return {}
 
+def get_cached_similar(artist, track_name):
+    cache.close()
+    with Cache(cache.directory) as reference:
+        value = reference.get(f"( {artist} |-|NavidromeCacheIndex-|- {track_name}")
+        if value:
+            return json.loads(value)
+        return value
+
+def cache_similar(artist, track_name, tracks):
+    cache.close()
+    with Cache(cache.directory) as reference:
+        return reference.set(f"( {artist} |-|NavidromeCacheIndex-|- {track_name}", json.dumps(tracks), expire=864000)
+
 def get_similar_tracks(lastfm_api_key, artist, track_name):
+    cached_value = get_cached_similar(artist,track_name)
+    if cached_value:
+        return cached_value
     try:
         lastfm_params = {
             'method': 'track.getSimilar',
@@ -288,7 +316,9 @@ def get_similar_tracks(lastfm_api_key, artist, track_name):
         lastfm_response = requests.get(
             'http://ws.audioscrobbler.com/2.0/', params=lastfm_params)
         lastfm_response.raise_for_status()
-        return lastfm_response.json().get('similartracks', {}).get('track', [])
+        tracks = lastfm_response.json().get('similartracks', {}).get('track', [])
+        cache_similar(artist, track_name, tracks)
+        return tracks
 
     except requests.exceptions.RequestException as e:
         print(f"Error getting similar tracks: {e}")
@@ -310,12 +340,15 @@ def get_playlist_id(navidrome_server_url, auth_tokens, playlist_name):
     for playlist in playlists:
         if playlist['name'] == playlist_name :
             return playlist['id']
+    send_navidrome_post(f'{navidrome_server_url}/api/playlist', auth_tokens, body={'public':False, 'name':playlist_name})
+    playlists = send_navidrome_request(
+    f'{navidrome_server_url}/api/playlist', auth_tokens, params={"_end":"0","_sort":"name","_start":"-100"})
+    for playlist in playlists:
+        if playlist['name'] == playlist_name :
+            return playlist['id']
     return None
 
 def get_playlist_songs(navidrome_server_url, auth_tokens, playlist_id):
-    if not playlist_id :
-        send_navidrome_post(f'{navidrome_server_url}/api/playlist', auth_tokens, body={'public':False, 'name':playlist_name})
-        return []
     songs = send_navidrome_request(
         f'{navidrome_server_url}/api/playlist/{playlist_id}/tracks', auth_tokens, params={"_end":"1000","_sort":"id","_start":"0","playlist_id":playlist_id})
     return songs
