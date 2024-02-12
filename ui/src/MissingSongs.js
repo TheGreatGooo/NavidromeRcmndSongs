@@ -44,22 +44,25 @@ const MissingSongs = () => {
         return 0
     });
     return(
-        <Table>
-            <thead>
-                <tr>
-                    <th>Album</th>
-                    <th>Artist</th>
-                    <th>Track Name</th>
-                    <th>Playcount</th>
-                </tr>
-            </thead>
-            <tbody>
-                {sortedSongsByAlbum.map(songWithDetails => <>
-                    <tr><td>{songWithDetails[0]}</td></tr>
-                    {songWithDetails[1].map(song => <tr><td></td><td>{song['playInfo']['artist']['name']}</td><td>{song['playInfo']['name']}</td><td>{song['playInfo']['playcount']}</td></tr>)}
-                </>)}
-            </tbody>
-        </Table>
+        <>
+        <a href={`data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(missingSongs))}`} download="export.json">Download Json</a>
+            <Table>
+                <thead>
+                    <tr>
+                        <th>Album</th>
+                        <th>Artist</th>
+                        <th>Track Name</th>
+                        <th>Playcount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {sortedSongsByAlbum.map(songWithDetails => <>
+                        <tr><td>{songWithDetails[0]}</td></tr>
+                        {songWithDetails[1].map(song => <tr><td></td><td>{song['playInfo']['artist']['name']}</td><td>{song['playInfo']['name']}</td><td>{song['playInfo']['playcount']}</td></tr>)}
+                    </>)}
+                </tbody>
+            </Table>
+        </>
     )
 }
 
